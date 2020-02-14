@@ -1,0 +1,5 @@
+$ docker images
+REPOSITORY                 TAG                 IMAGE ID            CREATED             SIZE
+yourname/ubuntu-tmp-file   latest              cd627ce6e3c7        7 seconds ago       124MB
+
+Контейнер - это запущенный образ. В выводе информации о нем есть такие атрибты как сетевые настройки, mount, слои, в образе этой информации нет.
