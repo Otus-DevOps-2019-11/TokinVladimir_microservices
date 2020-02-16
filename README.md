@@ -1,6 +1,54 @@
 # TokinVladimir_microservices
 TokinVladimir microservices repository
 
+Домашнее задание 16. Docker -3. Docker-образы. Микросервисы
+
+План:
+• Разбить наше приложение на несколько компонентов
+• Запустить наше микросервисное приложение
+
+docker-machine ls
+eval $(docker-machine env docker-host)
+
+Задание со *
+Запустите контейнеры с другими сетевыми алиасами
+Адреса для взаимодействия контейнеров задаются через ENV-переменные внутри Dockerfile'ов
+При запуске контейнеров (docker run) задайте им переменные окружения соответствующие новым сетевым алиасам, не пересоздавая образ
+Проверьте работоспособность сервиса
+
+Изменили сетевые алиасы, сервис не работает, пишет про проблемы с бд
+Добавили к запуску контейнера переменную –env POST_DATABASE_HOST=post_db_new (к примеру) и сервис заработал
+
+Подключим volume к БД
+docker volume create reddit_db
+docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db -v reddit_db:/data/db mongo:latest
+
+Задание со *
+• Попробуйте собрать образ на основе Alpine Linux
+Выполнено: FROM ruby:2.7.0-alpine3.11
+После установки пакетов надо бы их удалить, для этого использовал --virtual .имя apk del .имя
+Так же вынес строку RUN bundle install в структуру с RUN apk add --no-cache --virtual .имя
+
+docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ress72/ui           4.0                 4713083e262b        11 minutes ago      104MB
+ress72/comment      3.0                 2240234a4278        17 minutes ago      102MB
+<none>              <none>              358f8b315ae1        21 minutes ago      102MB
+<none>              <none>              99baa07c028d        24 minutes ago      102MB
+<none>              <none>              6e3f3cdb3cac        26 minutes ago      101MB
+<none>              <none>              95413a07c0ca        31 minutes ago      274MB
+ress72/comment      2.0                 040f5bc59b50        53 minutes ago      274MB
+<none>              <none>              d15198a54ae6        56 minutes ago      228MB
+ress72/ui           3.0                 1d3f3aac9d21        About an hour ago   277MB
+<none>              <none>              6661e1741b6d        About an hour ago   77.3MB
+ress72/ui           2.0                 cdf4c975b00a        2 hours ago         459MB
+ress72/ui           1.0                 52a1f9ffec51        3 hours ago         784MB
+ress72/comment      1.0                 c3ef265e1716        3 hours ago         782MB
+ress72/post         1.0                 c020654ffb5e        3 hours ago         110MB
+
+Уменьшены размеры ui и comment почти в 7 раз
+
+
 Домашнее задани 15. Docker-2. Технология контейнеризации. Введение в Docker.
 
 План:
