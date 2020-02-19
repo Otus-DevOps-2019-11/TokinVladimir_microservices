@@ -1,6 +1,155 @@
 # TokinVladimir_microservices
 TokinVladimir microservices repository
 
+#### Домашнее задание 17. Docker -4. Docker: сети, docker-compose
+
+### План
+
+* ul Работа с сетями в Docker
+ * ul none
+ * ul host
+ * ul bridge
+
+```
+docker network create reddit --driver bridge
+```
+
+```
+docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+docker run -d --network=reddit --network-alias=post <your-dockerhub-login>/post:1.0
+docker run -d --network=reddit --network-alias=comment  <your-dockerhub-login>/comment:1.0
+docker run -d --network=reddit -p 9292:9292 <your-dockerhub-login>/ui:1.0
+```
+
+Создадим docker сети
+
+```
+docker network create back_net --subnet=10.0.2.0/24
+docker network create front_net --subnet=10.0.1.0/24
+```
+
+```
+docker run -d --network=front_net -p 9292:9292 --name ui  <your-dockerhub-login>/ui:1.0
+docker run -d --network=back_net --name comment  <your-dockerhub-login>/comment:1.0
+docker run -d --network=back_net --name post  <your-dockerhub-login>/post:1.0
+docker run -d --network=back_net --name mongo_db --network-alias=post_db --network-alias=comment_db mongo:latest
+```
+
+Подключим контейнеры ко второй сети
+
+```
+docker network connect front_net post
+docker network connect front_net comment
+```
+
+* ulИспользование docker-compose
+ * ul Установить docker-compose на локальную машину
+ * ul Собрать образы приложения reddit с помощью docker-compose
+ * ul Запустить приложение reddit с помощью dockercompose
+
+docker-compose -
+• Отдельная утилита
+• Декларативное описание docker-инфраструктуры в YAMLформате
+• Управление многоконтейнерными приложениями
+
+Установка
+
+```
+ pip install docker-compose
+```
+
+Задание:
+1) Изменить docker-compose под кейс с множеством сетей, сетевых алиасов (стр 18).
+2) Параметризуйте с помощью переменных окружений:
+• порт публикации сервиса ui
+• версии сервисов
+• возможно что-либо еще на ваше усмотрение
+3) Параметризованные параметры запишите в отдельный файл c расширением .env
+4) Без использования команд source и export
+docker-compose должен подхватить переменные из этого файла. Проверьте
+P.S. Файл .env должен быть в .gitignore, в репозитории закоммичен .env.example, из
+которого создается .env
+
+```
+docker-compose.yml
+version: '3.3'
+services:
+  post_db:
+    image: mongo:${DB_VER}
+    volumes:
+      - post_db:/data/db
+    networks:
+      - back_net
+  ui:
+    build: ./ui
+    image: ${USERNAME}/ui:${UI_VER}
+    ports:
+      - ${PORT_SRC}:${PORT_DST}/${PROTOCOL}
+    container_name: ui_prowerka
+    networks:
+      - front_net
+  post:
+    build: ./post-py
+    image: ${USERNAME}/post:${POST_VER}
+    networks:
+      - front_net
+      - back_net
+  comment:
+    build: ./comment
+    image: ${USERNAME}/comment:${COMMENT_VER}
+    networks:
+      - front_net
+      - back_net
+
+volumes:
+  post_db:
+
+networks:
+  front_net:
+    external: true
+  back_net:
+    external: true
+```
+
+Задание:
+Узнайте как образуется базовое имя проекта. Можно ли его задать? Если можно то как?
+
+Базовое имя проекта можно изменить директивой container_name
+
+```
+container_name: ui_prowerka
+```
+
+Задание со *
+
+Создайте docker-compose.override.yml для reddit проекта, который позволит
+• Изменять код каждого из приложений, не выполняя сборку образа
+• Запускать puma для руби приложений в дебаг режиме с двумя воркерами (флаги --debug и -w 2)
+
+```
+version: '3.3'
+
+services:
+  ui:
+    volumes:
+      - ui:/app
+    command: puma --debug -w 2
+
+  comment:
+    volumes:
+      - comment:/app
+
+  post:
+    volumes:
+      - post-py:/app
+
+volumes:
+  ui:
+  comment:
+  post-py
+```
+
+
 Домашнее задание 16. Docker -3. Docker-образы. Микросервисы
 
 План:
