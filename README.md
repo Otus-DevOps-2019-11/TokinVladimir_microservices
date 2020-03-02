@@ -1,6 +1,188 @@
 # TokinVladimir_microservices
 TokinVladimir microservices repository
 
+#### Домашнее задание 19. Введение в мониторинг. Системы мониторинга.
+
+### План
+
+* Prometheus: запуск, конфигурация, знакомство с Web UI
+* Мониторинг состояния микросервисов
+* Сбор метрик хоста с использованием экспортера
+* Задания со *
+
+Создадим правило фаервола для Prometheus и Puma:
+
+```
+gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+gcloud compute firewall-rules create puma-default --allow tcp:9292
+```
+Создадим Docker хост в GCE и настроим локальное окружение на работу с ним
+
+```
+export GOOGLE_PROJECT=_ваш-проект_
+
+# create docker host
+docker-machine create --driver google \
+    --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+    --google-machine-type n1-standard-1 \
+    --google-zone europe-west1-b \
+    docker-host
+
+# configure local env
+eval $(docker-machine env docker-host)
+
+docker run --rm -p 9090:9090 -d --name prometheus  prom/prometheus
+
+docker-machine ip docker-host
+```
+Вся конфигурация Prometheus, в отличие от многих других систем мониторинга, происходит через
+файлы конфигурации и опции командной строки. Мы определим простой конфигурационный файл
+для сбора метрик с наших микросервисов
+
+```
+#prometheus.yml
+---
+global:
+  scrape_interval: '5s'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+        - 'localhost:9090'
+
+  - job_name: 'ui'
+    static_configs:
+      - targets:
+        - 'ui:9292'
+
+  - job_name: 'comment'
+    static_configs:
+      - targets:
+        - 'comment:9292'
+```
+
+Будем поднимать наш Prometheus совместно с микросервисами. Определите в вашем docker/docker-compose.yml файле новый сервис.
+
+Самостоятельно добавьте секцию networks в определение сервиса Prometheus в docker/dockercompose.yml.
+
+```
+#docker-compose.yml
+version: '3.3'
+services:
+  post_db:
+    image: mongo:${DB_VER}
+    volumes:
+      - post_db:/data/db
+    networks:
+      - back_net
+  ui:
+    image: ${USERNAME}/ui:${UI_VER}
+    ports:
+      - ${PORT_SRC}:${PORT_DST}/${PROTOCOL}
+    container_name: ui_prowerka
+    networks:
+      - front_net
+  post:
+    image: ${USERNAME}/post:${POST_VER}
+    networks:
+      - front_net
+      - back_net
+  comment:
+    image: ${USERNAME}/comment:${COMMENT_VER}
+    networks:
+      - front_net
+      - back_net
+  prometheus:
+    image: ${USERNAME}/prometheus
+    networks:
+      - front_net
+      - back_net
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+
+volumes:
+  post_db:
+  prometheus_data:
+
+networks:
+  front_net:
+    external: true
+  back_net:
+    external: true
+```
+
+### Мониторинг состояния микросервисов
+
+## Healthcheck-и представляют собой проверки того, что наш сервис здоров и работает в ожидаемом режиме.
+
+У меня ui_health и ui_health_comment_availability значения были 0, и график не строился.
+Изменил #docker-compose.yml, добавил aliases
+
+```
+  post_db:
+    image: mongo:${DB_VER}
+    volumes:
+      - post_db:/data/db
+    networks:
+      back_net:
+        aliases:
+          - post_db
+          - comment_db
+```
+
+## Exporters - Экспортер похож на вспомогательного агента для сбора метрик.
+
+В ситуациях, когда мы не можем реализовать отдачу метрик Prometheus в коде приложения, мы
+можем использовать экспортер, который будет транслировать метрики приложения или системы в
+формате доступном для чтения Prometheus.
+
+## Exporters
+
+* Программа, которая делает метрики доступными для сбора Prometheus
+* Дает возможность конвертировать метрики в нужный для Prometheus формат
+* Используется когда нельзя поменять код приложения
+* Примеры: PostgreSQL, RabbitMQ, Nginx, Node exporter, cAdvisor
+
+## Node exporter
+
+```
+#docker-compose.yml
+services:
+
+  node-exporter:
+    image: prom/node-exporter:v0.15.2
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+```
+Добавим еще один job:
+
+```
+scrape_configs:
+...
+ - job_name: 'node'
+ static_configs:
+ - targets:
+ - 'node-exporter:9100'
+```
+
+https://hub.docker.com/u/ress72
+
+
+
 #### Домашнее задание 18. Устройство Gitlab CI. Построение процесса непрерывной поставки
 
 ### План
@@ -59,10 +241,10 @@ docker network connect front_net post
 docker network connect front_net comment
 ```
 
-* ulИспользование docker-compose
- * ul Установить docker-compose на локальную машину
- * ul Собрать образы приложения reddit с помощью docker-compose
- * ul Запустить приложение reddit с помощью dockercompose
+* Использование docker-compose
+ * Установить docker-compose на локальную машину
+ * Собрать образы приложения reddit с помощью docker-compose
+ * Запустить приложение reddit с помощью dockercompose
 
 docker-compose -
 • Отдельная утилита

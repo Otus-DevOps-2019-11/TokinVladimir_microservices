@@ -17,4 +17,4 @@ services:
 volumes:
   ui:
   comment:
-  post-py
+  post-py:
