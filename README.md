@@ -241,10 +241,10 @@ docker network connect front_net post
 docker network connect front_net comment
 ```
 
-* ulИспользование docker-compose
- * ul Установить docker-compose на локальную машину
- * ul Собрать образы приложения reddit с помощью docker-compose
- * ul Запустить приложение reddit с помощью dockercompose
+* Использование docker-compose
+ * Установить docker-compose на локальную машину
+ * Собрать образы приложения reddit с помощью docker-compose
+ * Запустить приложение reddit с помощью dockercompose
 
 docker-compose -
 • Отдельная утилита
