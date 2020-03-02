@@ -1,14 +1,31 @@
 # TokinVladimir_microservices
 TokinVladimir microservices repository
 
+#### Домашнее задание 18. Устройство Gitlab CI. Построение процесса непрерывной поставки
+
+### План
+
+* Подготовить инсталляцию Gitlab CI
+* Подготовить репозиторий с кодом приложения
+* Описать для приложения этапы пайплайна
+* Определить окружения
+
+```
+> git checkout -b gitlab-ci-1
+> git remote add gitlab http://<your-vm-ip>/homework/example.git
+> git push gitlab gitlab-ci-1
+```
+
+
+
 #### Домашнее задание 17. Docker -4. Docker: сети, docker-compose
 
 ### План
 
-* ul Работа с сетями в Docker
- * ul none
- * ul host
- * ul bridge
+* Работа с сетями в Docker
+ * none
+ * host
+ * bridge
 
 ```
 docker network create reddit --driver bridge
