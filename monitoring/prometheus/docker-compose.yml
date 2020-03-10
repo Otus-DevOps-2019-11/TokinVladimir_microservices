@@ -17,6 +17,7 @@ services:
       - ${PORT_SRC}:${PORT_DST}/${PROTOCOL}
     networks:
       - front_net
+      - back_net
 
   post:
     image: ${USERNAME}/post:${POST_VER}
