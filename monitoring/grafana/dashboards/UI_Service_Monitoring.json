@@ -301,8 +301,8 @@
     "list": []
   },
   "time": {
-    "from": "2020-03-10T01:31:50.154Z",
-    "to": "2020-03-10T02:12:01.834Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
