@@ -14,9 +14,6 @@ services:
     ports:
       - "24224:24224"
       - "24224:24224/udp"
-    networks:
-      - front_net
-      - back_net
 
   elasticsearch:
     image: elasticsearch:7.4.0
@@ -29,17 +26,11 @@ services:
       - CLUSTER_NODE_MASTER=true
       - CLUSTER_MASTER_NODE_NAME=es01
       - discovery.type=single-node
-    networks:
-      - front_net
-      - back_net
 
   kibana:
     image: kibana:7.4.0
     ports:
       - "5601:5601"
-    networks:
-      - front_net
-      - back_net
 
 networks:
   front_net:

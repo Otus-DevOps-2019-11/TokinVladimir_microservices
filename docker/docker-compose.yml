@@ -5,6 +5,8 @@ services:
     image: mongo:3.2
     volumes:
       - post_db:/data/db
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
       back_net:
         aliases:
@@ -54,6 +56,8 @@ services:
 
   comment:
     image: ${USERNAME}/comment:${COMMENT_VER}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
       - front_net
       - back_net
